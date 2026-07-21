@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import re
 
 
 # ==========================================================
@@ -238,5 +239,28 @@ def preprocessing_pipeline(df: pd.DataFrame) -> pd.DataFrame:
     validate_dataset(df)
 
     print("\nPrétraitement terminé.\n")
+
+    return df
+def clean_multiselect_columns(df, columns):
+    """
+    Nettoie les colonnes à réponses multiples en remplaçant les virgules
+    situées à l'intérieur des parenthèses par '/'.
+    """
+
+    df = df.copy()
+
+    def clean_text(text):
+
+        if pd.isna(text):
+            return text
+
+        def replace(match):
+            return match.group(0).replace(",", "/")
+
+        return re.sub(r"\([^)]*\)", replace, text)
+
+    for column in columns:
+        if column in df.columns:
+            df[column] = df[column].apply(clean_text)
 
     return df
